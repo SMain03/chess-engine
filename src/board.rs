@@ -6,7 +6,7 @@ fn build_board(fen: String) -> Option<Board> {
     None
 }
 
-fn generate_moves(board: Board) -> Vec<Board> {
+fn generate_moves(board: &Board) -> Vec<Board> {
     generate_pseudo_legal_moves(board)
         .into_iter()
         .filter_map(|b| match is_legal(&b) {
@@ -16,7 +16,7 @@ fn generate_moves(board: Board) -> Vec<Board> {
         .collect()
 }
 
-fn generate_pseudo_legal_moves(board: Board) -> Vec<Board> {
+fn generate_pseudo_legal_moves(board: &Board) -> Vec<Board> {
     Vec::new()
 }
 
@@ -26,7 +26,7 @@ fn is_legal(board: &Board) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::board::{Board, build_board};
+    use crate::board::{Board, build_board, generate_moves};
 
     #[test]
     fn perft() {
@@ -45,7 +45,13 @@ mod tests {
                 let board = build_board(fen).unwrap();
                 vec![board]
             },
-            _ => Vec::new()
+            _ => {
+                nodes
+                    .iter()
+                    .map(|b| generate_moves(b))
+                    .flatten()
+                    .collect()
+            }
         }
     }
 }
