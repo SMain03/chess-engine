@@ -61,19 +61,24 @@ fn piece_placement_rank(board: &mut Option<Board>, rank: u8, rank_fen: &str) {
                     '6' => file += 6,
                     '7' => file += 7,
                     '8' => file += 8,
-                    'P' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().pawns, rank, file),
-                    'N' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().knights, rank, file),
-                    'B' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().bishops, rank, file),
-                    'R' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().rooks, rank, file),
-                    'Q' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().queens, rank, file),
-                    'K' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().kings, rank, file),
-                    'p' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().pawns, rank, file),
-                    'n' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().knights, rank, file),
-                    'b' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().bishops, rank, file),
-                    'r' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().rooks, rank, file),
-                    'q' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().queens, rank, file),
-                    'k' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().kings, rank, file),
-                    _ => *board = None
+                    _ => {
+                        match c {
+                            'P' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().pawns, rank, file),
+                            'N' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().knights, rank, file),
+                            'B' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().bishops, rank, file),
+                            'R' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().rooks, rank, file),
+                            'Q' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().queens, rank, file),
+                            'K' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().kings, rank, file),
+                            'p' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().pawns, rank, file),
+                            'n' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().knights, rank, file),
+                            'b' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().bishops, rank, file),
+                            'r' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().rooks, rank, file),
+                            'q' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().queens, rank, file),
+                            'k' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().kings, rank, file),
+                            _ => *board = None
+                        }
+                        file += 1;
+                    }
                 }
             }
         }
