@@ -2,6 +2,12 @@ use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Default)]
 struct Board {
+    isWhiteTurn: bool,
+    bitboards: Bitboards
+}
+
+#[derive(Copy, Clone, Default)]
+struct Bitboards {
     white_pieces: u64,
     black_pieces: u64,
     pawns: u64,
@@ -9,8 +15,10 @@ struct Board {
     bishops: u64,
     rooks: u64,
     queens: u64,
-    kings: u64
+    kings: u64,
+    empty: u64
 }
+
 
 fn build_board(fen: &str) -> Option<Board> {
     let sections: Vec<&str> = fen.split(' ').collect();
@@ -20,12 +28,12 @@ fn build_board(fen: &str) -> Option<Board> {
                 Default::default()
             );
             
-            piece_placement(&mut board, sections[0]);
-            side_to_move(&mut board, sections[1]);
-            castling_ability(&mut board, sections[2]);
-            en_passant_target_square(&mut board, sections[3]);
-            halfmove_clock(&mut board, sections[4]);
-            fullmove_counter(&mut board, sections[5]);
+            [piece_placement, side_to_move, castling_ability, en_passant_target_square, halfmove_clock, fullmove_counter]
+                .iter()
+                .fold(0, |acc, f| {
+                    f(&mut board, sections[acc]);
+                    acc + 1
+                });
 
             board
         },
@@ -44,6 +52,7 @@ fn piece_placement(board: &mut Option<Board>, piece_placement: &str) {
             },
             _ => *board = None
         }
+        determine_empty(board);
     }
 }
 
@@ -62,19 +71,20 @@ fn piece_placement_rank(board: &mut Option<Board>, rank: u8, rank_fen: &str) {
                     '7' => file += 7,
                     '8' => file += 8,
                     _ => {
+                        let mut bitboards = &mut board.unwrap().bitboards;
                         match c {
-                            'P' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().pawns, rank, file),
-                            'N' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().knights, rank, file),
-                            'B' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().bishops, rank, file),
-                            'R' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().rooks, rank, file),
-                            'Q' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().queens, rank, file),
-                            'K' => place_piece(&mut board.unwrap().white_pieces, &mut board.unwrap().kings, rank, file),
-                            'p' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().pawns, rank, file),
-                            'n' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().knights, rank, file),
-                            'b' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().bishops, rank, file),
-                            'r' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().rooks, rank, file),
-                            'q' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().queens, rank, file),
-                            'k' => place_piece(&mut board.unwrap().black_pieces, &mut board.unwrap().kings, rank, file),
+                            'P' => place_piece(&mut bitboards.white_pieces, &mut bitboards.pawns, rank, file),
+                            'N' => place_piece(&mut bitboards.white_pieces, &mut bitboards.knights, rank, file),
+                            'B' => place_piece(&mut bitboards.white_pieces, &mut bitboards.bishops, rank, file),
+                            'R' => place_piece(&mut bitboards.white_pieces, &mut bitboards.rooks, rank, file),
+                            'Q' => place_piece(&mut bitboards.white_pieces, &mut bitboards.queens, rank, file),
+                            'K' => place_piece(&mut bitboards.white_pieces, &mut bitboards.kings, rank, file),
+                            'p' => place_piece(&mut bitboards.black_pieces, &mut bitboards.pawns, rank, file),
+                            'n' => place_piece(&mut bitboards.black_pieces, &mut bitboards.knights, rank, file),
+                            'b' => place_piece(&mut bitboards.black_pieces, &mut bitboards.bishops, rank, file),
+                            'r' => place_piece(&mut bitboards.black_pieces, &mut bitboards.rooks, rank, file),
+                            'q' => place_piece(&mut bitboards.black_pieces, &mut bitboards.queens, rank, file),
+                            'k' => place_piece(&mut bitboards.black_pieces, &mut bitboards.kings, rank, file),
                             _ => *board = None
                         }
                         file += 1;
@@ -92,6 +102,15 @@ fn place_piece(colour: &mut u64, piece: &mut u64, rank: u8, file: u8) {
     let i = 1 << (8*rank + file);
     *colour = *colour | i;
     *piece = *piece | i;
+}
+
+fn determine_empty(board: &mut Option<Board>) {
+    if board.is_some() {
+        let mut bitboards = &mut board.unwrap().bitboards;
+        bitboards.empty = ![bitboards.white_pieces, bitboards.black_pieces]
+            .iter()
+            .fold(0, |acc, b| acc | b);
+    }
 }
 
 fn side_to_move(board: &mut Option<Board>, side_to_move: &str) {
@@ -125,6 +144,43 @@ fn generate_moves(board: &Board) -> Vec<Board> {
 }
 
 fn generate_pseudo_legal_moves(board: &Board) -> Vec<Board> {
+    [push_pawns, move_knights, move_bishops, move_rooks, move_queens, move_kings]
+        .iter()
+        .map(|f| f(board))
+        .flatten()
+        .collect()
+}
+
+fn push_pawns(board: &Board) -> Vec<Board> {
+    match board.isWhiteTurn {
+        true => {
+            let white_pawns = board.bitboards.white_pieces & board.bitboards.pawns;
+            let single_pushes = (white_pawns << 8) & bitboards.empty; // promotion?
+            
+        },
+        false => {
+            Vec::new()
+        }
+    }
+}
+
+fn move_knights(board: &Board) -> Vec<Board> {
+    Vec::new()
+}
+
+fn move_bishops(board: &Board) -> Vec<Board> {
+    Vec::new()
+}
+
+fn move_rooks(board: &Board) -> Vec<Board> {
+    Vec::new()
+}
+
+fn move_queens(board: &Board) -> Vec<Board> {
+    Vec::new()
+}
+
+fn move_kings(board: &Board) -> Vec<Board> {
     Vec::new()
 }
 
